@@ -41,3 +41,23 @@ jobs:
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        linter: [flake8, pylint, ruff, mypy]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: advanced-security/python-lint-code-scanning-action@v1
+        with:
+          linter: ${{ matrix.linter }}
+
+      # AI lint summarizer
+      - name: AI Lint Feedback (summary of issues)
+        if: github.event_name == 'pull_request'
+        uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
